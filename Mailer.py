@@ -43,9 +43,7 @@ class Mailer(object):
                 self.smtp_psswd = creds[1].replace('\n', '')
 
                 # do not log plaintext password
-                s = sha256()
-                s.update(self.smtp_psswd)
-                self.log.info('sha256(smtp_psswd) = "%s"', s.hexdigest())
+                self.log.info('sha256(smtp_psswd) = "%s"', sha256(self.smtp_psswd.encode('utf-8')).hexdigest())
 
         if self.sender != self.smtp_login:
             self.log.warning('sender is different from authorization email')
