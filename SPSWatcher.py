@@ -22,6 +22,9 @@ class SPSCrawler(object):
 
         self.http = urllib3.PoolManager()
 
+        if not os.path.exists(os.path.dirname(self.save_folder)):
+            os.mkdir(os.path.dirname(self.save_folder))
+
         self.log.info('current day is %s', datetime.now().isoformat())
         self.log.info('saving to folder : %s', os.path.abspath(self.save_folder))
         self.log.info('look_forward set to %d days', self.look_forward)
