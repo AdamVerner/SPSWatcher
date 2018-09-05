@@ -59,9 +59,12 @@ class Mailer(object):
 
         # attach all pdfs to mail body
         for p in pdfs or []:
-            part = MIMEApplication(p.data, name=p.name)
+            p_name = p.name
+            if p_name[-4:] is not '.pdf':
+                p_name = p_name + '.pdf'
+            part = MIMEApplication(p.data, name=p_name)
 
-            part['Content-Disposition'] = 'attachment; filename="%s"' % basename(p.name)
+            part['Content-Disposition'] = 'attachment; filename="%s"' % basename(p_name)
             msg.attach(part)
 
         # open connection to server and send the mail
