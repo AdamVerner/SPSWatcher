@@ -13,7 +13,7 @@ class PDF(object):
         self.pdf_name = name + '.pdf'
 
         self.save_path = os.path.dirname(self.path) + '/'
-        self.save_path += os.path.dirname(self.name) + '/'
+        self.save_path += self.name + '/'
         self.save_path += self.get_hex() + '.pdf'
 
     def get_hex(self):
