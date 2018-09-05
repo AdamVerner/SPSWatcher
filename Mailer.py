@@ -34,7 +34,7 @@ class Mailer(object):
                 self.recipients.append(r)
 
         with open('creds', 'r') as cred:
-            creds = cred.readlines(2)
+            creds = cred.readlines()
             if self.smtp_login is None:
                 self.smtp_login = creds[0].replace('\n', '')
                 self.log.info('smtp_login = %s', self.smtp_login)
