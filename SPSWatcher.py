@@ -41,10 +41,11 @@ class SPSCrawler(object):
             p = self.get_pdf(f)
             if p:
                 if p.is_new():
+                    self.log.debug('file is NEW')
                     new.append(p)
                     p.save()
 
-        if new is not []:
+        if new:
             self.mailer.send_mail(new)
 
     def get_pdf(self, name: str) -> Union[bool, PDF]:
