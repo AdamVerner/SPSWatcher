@@ -1,22 +1,28 @@
-# smtplib module send mail
-
 import smtplib
+from FileType import PDF
 
 TO = 'toimen21@gmail.com'
 SUBJECT = 'TEST MAIL'
 TEXT = 'Here is a message from python.'
 
+
+def construct_mail(pdf: PDF, recipient: str):
+    pass
+
 # Gmail Sign In
-gmail_sender = 'user@localhost'
-gmail_passwd = 'Password123'
+import os
+
+print(os.listdir(os.path.abspath(os.path.curdir)))
+with open('creds', 'r') as cred:
+    gmail_sender = cred.readlines(1)[0].replace('\n', '')
+    gmail_passwd = cred.readlines(1)[0].replace('\n', '')
 
 print('singing to server')
 server = smtplib.SMTP('smtp.gmail.com', 587)
 
 print('saying ehlo')
-server.ehlo()
+# server.ehlo()
 server.starttls()
-server.ehlo()
 
 print('logging in')
 server.login(gmail_sender, gmail_passwd)
