@@ -5,11 +5,11 @@ import logging
 
 class PDF(object):
 
-    def __init__(self, name: str, data: bytes, path: str):
+    def __init__(self, name: str, data: bytes, path: str, logger):
         self.name = name
         self.data = data
         self.path = path
-
+        self.log = logger
         self.pdf_name = name + '.pdf'
 
         self.save_path = os.path.dirname(self.path) + '/'
@@ -23,7 +23,7 @@ class PDF(object):
 
     def save(self):
 
-        logging.info('saving self to %s', self.save_path)
+        self.log.info('saving self to %s', self.save_path)
 
         if not os.path.exists(os.path.dirname(self.save_path)):
             os.mkdir(os.path.dirname(self.save_path))

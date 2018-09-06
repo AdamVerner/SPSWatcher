@@ -8,6 +8,7 @@ from time import sleep
 from FileType import PDF
 from Mailer import Mailer
 
+from datetime import datetime
 
 class SPSCrawler(object):
 
@@ -29,7 +30,7 @@ class SPSCrawler(object):
         self.log.info('saving to folder : %s', os.path.abspath(self.save_folder))
         self.log.info('look_forward set to %d days', self.look_forward)
 
-        self.mailer = Mailer('vernead15@sps-prosek.cz')
+        self.mailer = Mailer('vernead15@sps-prosek.cz', self.log)
 
     def _worker(self):
         look = [(datetime.now() + timedelta(days=x)).strftime('%d%m%Y.pdf') for x in range(self.look_forward)]
@@ -60,13 +61,14 @@ class SPSCrawler(object):
 
         if r.status != 200:
             return False
-        pdf = PDF(name.replace('.pdf', ''), r.data, self.save_folder)
+        pdf = PDF(name.replace('.pdf', ''), r.data, self.save_folder, self.log)
         self.log.debug('file found with hex: %s', pdf.get_hex())
         return pdf
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     sc = SPSCrawler()
     while True:
         try:
@@ -74,7 +76,10 @@ def main():
         except Exception as ex:
             print(ex)
         finally:
-            sleep(600)
+            # minutes to quarter
+            mtq = 15 - (datetime.now().minute % 15)
+            sc.log.info('going to sleep for %d minutes', mtq)
+            sleep(mtq * 60)
 
 
 if __name__ == '__main__':

@@ -23,8 +23,8 @@ class Mailer(object):
     smtp_login = None
     smtp_psswd = None
 
-    def __init__(self, sender: str):
-        self.log = logging.getLogger(__name__)
+    def __init__(self, sender: str, logger:logging.getLogger):
+        self.log = logger
         self.sender = sender
 
         with open('recipients', 'r') as rcps:
