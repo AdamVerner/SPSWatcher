@@ -49,6 +49,7 @@ class SPSCrawler(object):
                     p.save()
 
         if new:
+            self.log.info('*'*50 + 'sending mail')
             self.mailer.send_mail(new)
 
     def get_pdf(self, name: str) -> Union[bool, PDF]:

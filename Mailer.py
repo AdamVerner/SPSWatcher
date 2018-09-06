@@ -19,9 +19,10 @@ from FileType import PDF
 
 class Mailer(object):
 
-    recipients = ['toimen21@gmail.com']
+    recipients = []
     smtp_login = None
     smtp_psswd = None
+    reply_to   = None
 
     def __init__(self, sender: str, logger:logging.getLogger):
         self.log = logger
@@ -45,15 +46,20 @@ class Mailer(object):
                 # do not log plaintext password
                 self.log.info('sha256(smtp_psswd) = "%s"', sha256(self.smtp_psswd.encode('utf-8')).hexdigest())
 
+                if self.reply_to is None:
+                    self.reply_to = creds[2].replace('\n', '')
+                    self.log.info('using %s as reply-to address', self.reply_to)
+
         if self.sender != self.smtp_login:
             self.log.warning('sender is different from authorization email')
 
     def send_mail(self, pdfs: List[PDF]=None):
         msg = MIMEMultipart()
-        msg['From'] = self.sender
-        msg['To'] = ', '.join(self.recipients)
+        # msg['From'] = 'SPSWatcher@SPSWatcher.eu'
+        # msg['To'] = ', '.join(self.recipients)
         msg['Date'] = formatdate(localtime=True)
         msg['Subject'] = 'New file on sps-prosek.cz'
+        msg['Reply-To'] = self.reply_to
 
         msg.attach(MIMEText('new file found, what else do you need to know?'))
 
