@@ -15,18 +15,15 @@ import logging
 from hashlib import sha256
 
 from FileType import PDF
+import auth
 
 
 class Mailer(object):
 
     recipients = []
-    smtp_login = None
-    smtp_psswd = None
-    reply_to   = None
 
-    def __init__(self, sender: str, logger:logging.getLogger):
+    def __init__(self, logger: logging.getLogger):
         self.log = logger
-        self.sender = sender
 
         with open('recipients', 'r') as rcps:
             for r in rcps.readlines():
@@ -34,32 +31,13 @@ class Mailer(object):
                 self.log.info('adding %s to recipients', repr(r))
                 self.recipients.append(r)
 
-        with open('creds', 'r') as cred:
-            creds = cred.readlines()
-            if self.smtp_login is None:
-                self.smtp_login = creds[0].replace('\n', '')
-                self.log.info('smtp_login = %s', self.smtp_login)
-
-            if self.smtp_psswd is None:
-                self.smtp_psswd = creds[1].replace('\n', '')
-
-                # do not log plaintext password
-                self.log.info('sha256(smtp_psswd) = "%s"', sha256(self.smtp_psswd.encode('utf-8')).hexdigest())
-
-                if self.reply_to is None:
-                    self.reply_to = creds[2].replace('\n', '')
-                    self.log.info('using %s as reply-to address', self.reply_to)
-
-        if self.sender != self.smtp_login:
-            self.log.warning('sender is different from authorization email')
-
     def send_mail(self, pdfs: List[PDF]=None):
         msg = MIMEMultipart()
         # msg['From'] = 'SPSWatcher@SPSWatcher.eu'
         # msg['To'] = ', '.join(self.recipients)
         msg['Date'] = formatdate(localtime=True)
         msg['Subject'] = 'New file on sps-prosek.cz'
-        msg['Reply-To'] = self.reply_to
+        msg['Reply-To'] = auth.Smtp.reply_to
 
         msg.attach(MIMEText('new file found, what else do you need to know?'))
 
@@ -77,7 +55,7 @@ class Mailer(object):
         self.log.debug('opening connection to SMTP server and sending emails')
         with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
             smtp.starttls()
-            smtp.login(self.smtp_login, self.smtp_psswd)
-            smtp.sendmail(self.sender, self.recipients, msg.as_string())
+            smtp.login(auth.Smtp.login, auth.Smtp.password)
+            smtp.sendmail(auth.Smtp.sender, self.recipients, msg.as_string())
 
         self.log.info('emails sucessfully sent')

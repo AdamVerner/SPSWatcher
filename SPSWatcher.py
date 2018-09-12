@@ -32,7 +32,7 @@ class SPSCrawler(object):
         self.log.info('saving to folder : %s', os.path.abspath(self.save_folder))
         self.log.info('look_forward set to %d days', self.look_forward)
 
-        self.mailer = Mailer('vernead15@sps-prosek.cz', self.log)
+        self.mailer = Mailer(self.log)
 
     def _worker(self):
         look = [(datetime.now() + timedelta(days=x)).strftime('%d%m%Y.pdf') for x in range(self.look_forward)]
