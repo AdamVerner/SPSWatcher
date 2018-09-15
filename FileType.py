@@ -3,6 +3,7 @@ import os
 import logging
 import PDFProcessor
 import datetime
+import re
 
 
 class PDF(object):
@@ -48,7 +49,7 @@ class PDF(object):
         unified = PDFProcessor.unify_pages(pages)
         return unified
 
-    def get_day_name(self, lang='CZ'):
+    def get_day_name(self, lang='CZ')->str:
         """
         TODO change to use locale settings, not translation table
         :param lang: {CZ|EN}
@@ -83,16 +84,23 @@ class PDF(object):
         name = translation[lang][int(dtobj.strftime('%w'))]
         return name
 
+    def get_author(self)->str:
+        try:
+            re_author = re.compile('/Author\((.*)\)>>endobj')
+            author = re_author.findall("".join(map(chr, self.data)))[0]
+        except IndexError:
+            return 'Unknown'
+
+        return author
+
+
+
+
+
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
     p = PDF('testfile', b'BULLSHIT PDF', './temp')
-
-    print(bool(p))
-
-    print(p.is_new())
-    p.save()
-    print(p.is_new())
 
 
 if __name__ == '__main__':
