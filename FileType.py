@@ -94,13 +94,15 @@ class PDF(object):
         return author
 
 
-
-
-
-
 def main():
     logging.basicConfig(level=logging.DEBUG)
     p = PDF('testfile', b'BULLSHIT PDF', './temp')
+
+    print(bool(p))
+
+    print(p.is_new())
+    p.save()
+    print(p.is_new())
 
 
 if __name__ == '__main__':
