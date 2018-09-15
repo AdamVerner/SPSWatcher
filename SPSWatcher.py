@@ -10,7 +10,6 @@ from time import sleep
 from FileType import PDF
 from Mailer import Mailer
 
-from datetime import datetime
 
 class SPSCrawler(object):
 
@@ -37,20 +36,14 @@ class SPSCrawler(object):
     def _worker(self):
         look = [(datetime.now() + timedelta(days=x)).strftime('%d%m%Y.pdf') for x in range(self.look_forward)]
 
-        new = []
-
         for f in look:
             self.log.debug('working with : %s', f)
             p = self.get_pdf(f)
             if p:
                 if p.is_new():
                     self.log.debug('file is NEW')
-                    new.append(p)
+                    self.mailer.send_mail(p)
                     p.save()
-
-        if new:
-            self.log.info('*'*50 + 'sending mail')
-            self.mailer.send_mail(new)
 
     def get_pdf(self, name: str) -> Union[bool, PDF]:
 
@@ -71,12 +64,14 @@ class SPSCrawler(object):
 
 def main():
     FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
     sc = SPSCrawler()
     while True:
         try:
             sc._worker()
         except Exception as ex:
+            import traceback
+            traceback.print_exc()
             print(ex)
         finally:
             # minutes to quarter

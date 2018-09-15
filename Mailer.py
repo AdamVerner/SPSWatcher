@@ -9,8 +9,12 @@ from os.path import basename
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from email.utils import formatdate
+from email.utils import make_msgid
+from email.message import EmailMessage
 from typing import List
+import mimetypes
 import logging
 
 from FileType import PDF
@@ -22,36 +26,52 @@ class Mailer(object):
     def __init__(self, logger: logging.getLogger):
         self.log = logger
 
-    def send_mail(self, pdfs: List[PDF]=None):
-        msg = MIMEMultipart()
+    def send_mail(self, pdf: PDF=None):
+        msg = EmailMessage()
         msg['Date'] = formatdate(localtime=True)
         msg['Subject'] = 'New file on sps-prosek.cz'
         msg['Reply-To'] = auth.Smtp.reply_to
 
-        msg.attach(MIMEText('new file found, what else do you need to know?'))
+        # set the plain text body
+        msg.set_content('This is a plain text body.')
 
-        # attach all pdfs to mail body
-        for p in pdfs or []:
-            p_name = p.name
-            if p_name[-4:] is not '.pdf':
-                p_name = p_name + '.pdf'
-            part = MIMEApplication(p.data, name=p_name)
+        # now create a Content-ID for the image
+        # image_cid looks like <long.random.number@xyz.com>
+        # to use it as the img src, we don't need `<` or `>`
+        # so we use [1:-1] to strip them off
+        image_cid = make_msgid()[1:-1]
+        # if `domain` argument isn't provided, it will
+        # use your computer's name
 
-            part['Content-Disposition'] = 'attachment; filename="%s"' % basename(p_name)
-            msg.attach(part)
+        # set an alternative html body
 
-        recipients = []
-        with open('recipients', 'r') as rcps:
-            for r in rcps.readlines():
-                r = r.replace('\n', '')
-                self.log.info('adding %s to recipients', repr(r))
-                recipients.append(r)
+        with open('email-template.html', 'r') as email_template:
+            email_message = email_template.read()
+
+        email_message = email_message.replace('{version_numer}', str(pdf.get_version()))
+        email_message = email_message.replace('{day_name}',      pdf.get_day_name())
+        email_message = email_message.replace('{image_cid}',     image_cid)
+
+        msg.add_alternative(email_message, subtype='html')
+
+        # attach it
+        msg.get_payload()[1].add_related(pdf.get_as_image(), maintype='image', subtype='png', cid=image_cid)
 
         # open connection to server and send the mail
         self.log.debug('opening connection to SMTP server and sending emails')
         with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
             smtp.starttls()
             smtp.login(auth.Smtp.login, auth.Smtp.password)
-            smtp.sendmail(auth.Smtp.sender, recipients, msg.as_string())
+            smtp.sendmail(auth.Smtp.sender, self.get_recipients(), msg.as_string())
 
-        self.log.info('emails sucessfully sent')
+        self.log.info('emails successfully sent')
+
+    def get_recipients(self)-> List[str]:
+        recipients = list()
+        with open('recipients', 'r') as rcps:
+            for r in rcps.readlines():
+                r = r.replace('\n', '')
+                self.log.info('adding %s to recipients', repr(r))
+                recipients.append(r)
+
+        return recipients
