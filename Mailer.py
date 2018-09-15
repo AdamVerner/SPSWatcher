@@ -48,9 +48,10 @@ class Mailer(object):
         with open('email-template.html', 'r') as email_template:
             email_message = email_template.read()
 
-        email_message = email_message.replace('{version_numer}', str(pdf.get_version()))
+        email_message = email_message.replace('{version_number}', str(pdf.get_version()))
         email_message = email_message.replace('{day_name}',      pdf.get_day_name())
         email_message = email_message.replace('{image_cid}',     image_cid)
+        email_message = email_message.replace('{author_name}',   pdf.get_author())
 
         msg.add_alternative(email_message, subtype='html')
 
