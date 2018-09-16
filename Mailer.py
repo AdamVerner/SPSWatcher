@@ -52,6 +52,8 @@ class Mailer(object):
         email_message = email_message.replace('{day_name}',      pdf.get_day_name())
         email_message = email_message.replace('{image_cid}',     image_cid)
         email_message = email_message.replace('{author_name}',   pdf.get_author())
+        email_message = email_message.replace('{unsubscribe_link}', auth.Smtp.unsubscribe)
+        email_message = email_message.replace('{repo_link}', auth.Smtp.repository)
 
         msg.add_alternative(email_message, subtype='html')
 

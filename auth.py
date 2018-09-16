@@ -14,3 +14,5 @@ class Smtp:
     password = ''
     reply_to = ''
     sender   = ''
+    unsubscribe = ''
+    repository = 'https://github.com/AdamVerner/SPSWatcher'
